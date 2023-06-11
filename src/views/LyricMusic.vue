@@ -1,6 +1,6 @@
 <script setup>
-import { ref, onMounted } from "vue";
-import axios from "axios";
+// import { ref, onMounted } from "vue";
+// import axios from "axios";
 import Play from "vue-material-design-icons/Play.vue";
 import Pause from "vue-material-design-icons/Pause.vue";
 import Music from "vue-material-design-icons/Music.vue";
@@ -10,59 +10,70 @@ import Repeat from "vue-material-design-icons/Repeat.vue";
 import Shuffle from "vue-material-design-icons/Shuffle.vue";
 import ChevronDown from "vue-material-design-icons/ChevronDown.vue";
 
-const musics = ref([]);
-const musicLyrics = ref([]);
-const currentMusic = ref(null);
-const isPlaying = ref(false);
-const currentAudio = ref(null);
+import { ref, onMounted, computed } from "vue";
+import { useSongStore } from "../stores/song";
+const store = useSongStore();
 
-const fetchMusics = () => {
-  axios.get("https://music-api.matrikdev.repl.co/").then((response) => {
-    musics.value = response.data;
-  });
-};
-
-const fetchMusicLyric = async () => {
-  try {
-    const response = await fetch("https://music-api.matrikdev.repl.co/");
-    const data = await response.json();
-    musicLyrics.value = data[0];
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-async function playPauseMusic(music) {
-  try {
-    if (isPlaying.value) {
-      // Musik sedang diputar, jadi hentikan pemutaran
-      isPlaying.value = false;
-      const audio = currentAudio.value;
-      if (audio) {
-        await audio.pause();
-        audio.currentTime = 0;
-      }
-    } else {
-      // Musik belum diputar, mulai pemutaran
-      isPlaying.value = true;
-      const audio = new Audio(music.music);
-      currentAudio.value = audio;
-      await audio.play();
-      audio.addEventListener("ended", () => {
-        // Pemutaran selesai, setel kembali ke status berhenti
-        isPlaying.value = false;
-        currentAudio.value = null;
-      });
-    }
-  } catch (error) {
-    console.log("Failed to play music:", error);
-  }
-}
-
-onMounted(() => {
-  fetchMusics();
-  fetchMusicLyric();
+// const getMusics = computed(() => {
+//   return store.getMusics;
+// });
+const musics = computed(() => {
+  return store.musics;
 });
+onMounted(() => {
+  store.fetchMusics();
+});
+
+// const musics = ref([]);
+// const musicLyrics = ref([]);
+// const currentMusic = ref(null);
+// const isPlaying = ref(false);
+// const currentAudio = ref(null);
+
+// const fetchMusics = () => {
+//   axios.get("https://music-api.matrikdev.repl.co/").then((response) => {
+//     musics.value = response.data;
+//   });
+// };
+
+// const fetchMusicLyric = async () => {
+//   try {
+//     const response = await fetch("https://music-api.matrikdev.repl.co/");
+//     const data = await response.json();
+//     musicLyrics.value = data[0];
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
+
+// async function playPauseMusic(music) {
+//   try {
+//     if (isPlaying.value) {
+//       isPlaying.value = false;
+//       const audio = currentAudio.value;
+//       if (audio) {
+//         await audio.pause();
+//         audio.currentTime = 0;
+//       }
+//     } else {
+//       isPlaying.value = true;
+//       const audio = new Audio(music.music);
+//       currentAudio.value = audio;
+//       await audio.play();
+//       audio.addEventListener("ended", () => {
+//         isPlaying.value = false;
+//         currentAudio.value = null;
+//       });
+//     }
+//   } catch (error) {
+//     console.log("Failed to play music:", error);
+//   }
+// }
+
+// onMounted(() => {
+//   fetchMusics();
+//   fetchMusicLyric();
+// });
 </script>
 
 <template>
@@ -79,11 +90,7 @@ onMounted(() => {
         </h1>
       </div>
       <router-link to="/player-music">
-        <div
-          v-for="music in musics"
-          :key="music.title"
-          class="flex flex-row pt-4"
-        >
+        <div v-for="music in musics" :key="music.id" class="flex flex-row pt-4">
           <div class="flex-shrink-0">
             <img
               :src="music.image"
@@ -120,13 +127,22 @@ onMounted(() => {
           <h4 class="pl-2">Lyrics</h4>
         </div>
 
-        <p
+        <!-- <div class="text-white" v-for="music in getMusics" :key="music.id">
+          Id : {{ music.id }} <br />
+          Title : {{ music.title }} <br />
+          Artis : {{ music.artist }} <br />
+          Music : {{ music.music }}<br />
+          Lyric : {{ music.lirics }}<br />
+          Image : {{ music.image }}<br />
+          <hr />
+        </div> -->
+        <!-- <p
           v-for="lyric in musicLyrics.lirics"
           :key="lyric"
           class="text-white text-lg font-semibold"
         >
           {{ lyric }}
-        </p>
+        </p> -->
       </div>
     </div>
 
